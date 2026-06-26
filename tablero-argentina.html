@@ -1,0 +1,3307 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tablero económico · Argentina 2019–hoy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f0e6;
+    --paper: #fbf9f3;
+    --ink: #14181f;
+    --ink-soft: #4a4a44;
+    --muted: #8a8579;
+    --rule: #d9d2c2;
+    --rule-soft: #e8e2d2;
+    --pos: #2d6a4f;     /* verde tabaco */
+    --neg: #9b2c2c;     /* rojo malbec */
+    --accent: #b87327;  /* ámbar / cobre */
+    --accent-soft: #e9c89a;
+    --blue: #1f3a5f;
+    --blue-soft: #4a6789;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .num { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  /* Header / masthead */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 28px 32px 18px;
+    background: var(--paper);
+    position: relative;
+  }
+  .masthead-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: 44px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin: 0;
+  }
+  .brand em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .kicker .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--pos);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.18);
+  }
+  .meta {
+    text-align: right;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .meta strong { font-weight: 600; color: var(--ink); }
+
+  /* Hero stats: live ticker-cards */
+  .hero-stats {
+    padding: 24px 32px 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .stat {
+    background: var(--paper);
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 110px;
+  }
+  .stat-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--ink);
+    margin-top: 8px;
+    letter-spacing: -0.01em;
+  }
+  .stat-sub {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-sub .up { color: var(--pos); }
+  .stat-sub .down { color: var(--neg); }
+
+  /* Main grid */
+  main { padding: 28px 32px 60px; }
+
+  .section-head {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    margin: 38px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .section-head:first-child { margin-top: 0; }
+  .section-head .roman {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 18px;
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 20px 22px 18px;
+    grid-column: span 6;
+    display: flex;
+    flex-direction: column;
+  }
+  .card.full { grid-column: span 12; }
+  .card.third { grid-column: span 4; }
+  .card.two-thirds { grid-column: span 8; }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin: 0;
+    line-height: 1.25;
+  }
+  .card-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 4px 0 14px;
+  }
+  .card-meta {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--rule);
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-meta .src { font-style: italic; text-transform: none; letter-spacing: 0; }
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+  .badge-live { background: var(--pos); color: #fbf9f3; }
+  .badge-period { background: var(--rule); color: var(--ink-soft); }
+  .badge-approx { background: var(--accent); color: #fbf9f3; margin-left: 4px; }
+
+  .muted { color: var(--muted); font-style: italic; }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 280px;
+  }
+  .chart-wrap.tall { height: 340px; }
+  .chart-wrap.short { height: 220px; }
+
+  .legend-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .legend-inline .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+
+  .num-big {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .num-positive { color: var(--pos); }
+  .num-negative { color: var(--neg); }
+
+  .loading {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 12px;
+  }
+  .error {
+    color: var(--neg);
+    font-size: 11.5px;
+    margin-top: 8px;
+  }
+
+  /* Footer */
+  footer {
+    padding: 32px;
+    border-top: 1px solid var(--rule);
+    color: var(--ink-soft);
+    font-size: 12px;
+    background: var(--paper);
+    margin-top: 40px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer .small { color: var(--muted); font-size: 11px; margin-top: 10px; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .card { grid-column: span 12; }
+    .card.third, .card.two-thirds { grid-column: span 12; }
+  }
+  @media (max-width: 640px) {
+    .masthead { padding: 22px 18px 14px; }
+    .brand { font-size: 32px; }
+    .hero-stats { padding: 16px 18px 8px; }
+    main { padding: 22px 18px 40px; }
+    .card { padding: 16px 16px 14px; }
+  }
+
+  /* Print-quality details */
+  .footnote {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-row">
+    <div>
+      <div class="kicker">
+        <span class="dot" id="status-dot"></span>
+        <span>Tablero económico</span>
+        <span style="color:var(--rule)">·</span>
+        <span>República Argentina</span>
+      </div>
+      <h1 class="brand">La economía argentina, <em>en gráficos</em></h1>
+    </div>
+    <div class="meta">
+      <div>Datos en vivo refrescados al abrir la página</div>
+      <div><strong>Última actualización:</strong> <span id="updated-at">—</span></div>
+      <div class="footnote">Período: enero 2019 → presente</div>
+    </div>
+  </div>
+  <div id="net-warn" style="display:none; margin-top:14px; padding:10px 14px; background:#fdf1e1; border:1px solid #b87327; border-left-width:4px; font-size:12.5px; color:#5b3a10;">
+    <strong>No se pudo cargar la data en vivo.</strong>
+    Esto suele pasar cuando se abre el archivo directamente con doble clic (<code>file://</code>) y el navegador bloquea los pedidos a APIs externas.
+    Solución rápida: parate en la carpeta donde está el archivo y corré <code>python3 -m http.server 8080</code>, después abrí <code>http://localhost:8080/tablero-argentina.html</code>.
+    Las series anuales (balanza, pobreza, petróleo, etc.) se muestran igual porque están embebidas.
+  </div>
+</header>
+
+<!-- Live "above the fold" stats -->
+<section class="hero-stats" id="hero-stats">
+  <div class="stat" data-key="oficial">
+    <div class="stat-label">Dólar oficial</div>
+    <div class="stat-value num" id="v-oficial">—</div>
+    <div class="stat-sub" id="d-oficial">Cargando…</div>
+  </div>
+  <div class="stat" data-key="blue">
+    <div class="stat-label">Dólar blue</div>
+    <div class="stat-value num" id="v-blue">—</div>
+    <div class="stat-sub" id="d-blue">Cargando…</div>
+  </div>
+  <div class="stat" data-key="mep">
+    <div class="stat-label">Dólar MEP</div>
+    <div class="stat-value num" id="v-mep">—</div>
+    <div class="stat-sub" id="d-mep">Cargando…</div>
+  </div>
+  <div class="stat" data-key="ccl">
+    <div class="stat-label">Dólar CCL</div>
+    <div class="stat-value num" id="v-ccl">—</div>
+    <div class="stat-sub" id="d-ccl">Cargando…</div>
+  </div>
+  <div class="stat" data-key="riesgo">
+    <div class="stat-label">Riesgo país</div>
+    <div class="stat-value num" id="v-riesgo">—</div>
+    <div class="stat-sub" id="d-riesgo">Cargando…</div>
+  </div>
+  <div class="stat" data-key="inflacion">
+    <div class="stat-label">Inflación mens.</div>
+    <div class="stat-value num" id="v-inflacion">—</div>
+    <div class="stat-sub" id="d-inflacion">Cargando…</div>
+  </div>
+  <div class="stat" data-key="ia">
+    <div class="stat-label">Inflación i.a.</div>
+    <div class="stat-value num" id="v-ia">—</div>
+    <div class="stat-sub" id="d-ia">Cargando…</div>
+  </div>
+  <div class="stat" data-key="uva">
+    <div class="stat-label">UVA</div>
+    <div class="stat-value num" id="v-uva">—</div>
+    <div class="stat-sub" id="d-uva">Cargando…</div>
+  </div>
+</section>
+
+<main>
+
+  <!-- ===== I. Inflación y precios ===== -->
+  <div class="section-head">
+    <span>Inflación y precios</span>
+    <span class="roman">I</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card two-thirds">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Inflación mensual (IPC nacional)</h3>
+          <div class="card-sub">Variación porcentual del Índice de Precios al Consumidor, mes contra mes anterior.</div>
+        </div>
+        <span class="badge badge-live">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-inflacion"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC (vía ArgentinaDatos)</span></span>
+        <span>Mensual</span>
+      </div>
+    </div>
+
+    <div class="card third">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Inflación interanual</h3>
+          <div class="card-sub">Variación del IPC en 12 meses.</div>
+        </div>
+        <span class="badge badge-live">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-inflacion-ia"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC</span></span>
+        <span>Mensual i.a.</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Unidad de Valor Adquisitivo (UVA)</h3>
+          <div class="card-sub">Valor diario de la UVA, que ajusta créditos hipotecarios, alquileres ICL y plazos fijos UVA por inflación.</div>
+        </div>
+        <span class="badge badge-live">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-uva"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">BCRA (vía ArgentinaDatos)</span></span>
+        <span>Diario</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== II. Tipo de cambio y riesgo soberano ===== -->
+  <div class="section-head">
+    <span>Tipo de cambio y riesgo soberano</span>
+    <span class="roman">II</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Cotizaciones del dólar</h3>
+          <div class="card-sub">Oficial, blue, MEP y contado con liquidación (CCL), en pesos por dólar.</div>
+        </div>
+        <span class="badge badge-live">EN VIVO</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-dolares"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">ArgentinaDatos / DolarApi</span></span>
+        <span>Diario</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Brecha cambiaria</h3>
+          <div class="card-sub">Diferencia porcentual entre el dólar paralelo (blue) y el oficial.</div>
+        </div>
+        <span class="badge badge-live">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-brecha"></canvas></div>
+      <div class="card-meta">
+        <span>Cálculo propio sobre ArgentinaDatos</span>
+        <span>Diario</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Riesgo país (EMBI+)</h3>
+          <div class="card-sub">Sobretasa que exige el mercado a la deuda argentina sobre los bonos del Tesoro de EE.UU., en puntos básicos.</div>
+        </div>
+        <span class="badge badge-live">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-riesgo"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">JP Morgan EMBI+ (vía ArgentinaDatos)</span></span>
+        <span>Diario</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== III. Sector externo ===== -->
+  <div class="section-head">
+    <span>Sector externo</span>
+    <span class="roman">III</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Balanza comercial</h3>
+          <div class="card-sub">Exportaciones, importaciones y saldo anual de bienes, en miles de millones de USD. La serie muestra los déficits estructurales 2015-2018 con la apertura comercial Macri, el ajuste post-2018 y el récord exportador en marcha durante 2026.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-balanza"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — Intercambio Comercial Argentino (ICA)</span></span>
+        <span>2013–may 2026</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Balanza energética</h3>
+          <div class="card-sub">Saldo del intercambio de combustibles y energía, en millones de USD. La serie muestra el déficit estructural 2016-2018 por importaciones de gas y combustibles, el cierre de la brecha en 2019 con el aumento de la producción, y el boom exportador desde 2023 por Vaca Muerta. Solo en mayo de 2026 el superávit energético alcanzó US$ 1.543 millones, el más alto de toda la serie.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-energia"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC / Sec. de Energía</span></span>
+        <span>2016–may 2026</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Exportaciones por gran rubro</h3>
+          <div class="card-sub">Composición anual de las exportaciones en millones de USD: productos primarios, manufacturas agropecuarias e industriales, y combustibles.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-rubros"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — ICA</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Exportaciones: precios vs cantidades</h3>
+          <div class="card-sub">Índices de precios y cantidades exportadas (base 2004 = 100). Muestra si los dólares varían por mover más volumen o porque cambian los precios internacionales.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-precios-cant"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — Índices de comercio exterior</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== IV. Hidrocarburos y minería ===== -->
+  <div class="section-head">
+    <span>Hidrocarburos y minería</span>
+    <span class="roman">IV</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Producción de petróleo</h3>
+          <div class="card-sub">Promedio anual de barriles diarios. Se ve el mínimo histórico moderno de 2017-2018 (488 mil bbl/d), el rebote inicial del shale, y la aceleración desde 2022 que llevó a Argentina al récord histórico en 2025 superando el pico de 1998.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-petroleo"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Secretaría de Energía / IAPG</span></span>
+        <span>2016–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Producción de gas natural</h3>
+          <div class="card-sub">Promedio anual en millones de m³ diarios. Crecimiento sostenido del no convencional desde 2018, compensando el declive de los yacimientos convencionales.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-gas"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Secretaría de Energía</span></span>
+        <span>2016–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Vaca Muerta: petróleo convencional vs no convencional</h3>
+          <div class="card-sub">Porcentaje de la producción nacional de petróleo que proviene de yacimientos shale/tight. Hoy el no convencional concentra más del 70% del crudo.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-vaca"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Sec. de Energía / IAE Mosconi</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Exportaciones mineras</h3>
+          <div class="card-sub">Total de exportaciones del sector minero, en millones de USD. Litio y oro empujan el crecimiento.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-mineria"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Sec. de Minería / INDEC</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== V. Agroindustria ===== -->
+  <div class="section-head">
+    <span>Agroindustria</span>
+    <span class="roman">V</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Producción de granos por campaña</h3>
+          <div class="card-sub">Soja, maíz, trigo y otros granos, en millones de toneladas. La campaña 2022/23 fue golpeada por una sequía histórica.</div>
+        </div>
+        <span class="badge badge-period">CAMPAÑA</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-granos"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Bolsa de Comercio de Rosario</span></span>
+        <span>2018/19–2024/25</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Faena y exportación de carne vacuna</h3>
+          <div class="card-sub">Faena total y exportaciones, en miles de toneladas res con hueso.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-carne"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">SENASA / IPCVA</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Producción de leche</h3>
+          <div class="card-sub">Producción nacional de leche cruda, en miles de millones de litros anuales.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-lacteos"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">OCLA / Sec. de Agricultura</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Exportaciones del complejo sojero</h3>
+          <div class="card-sub">Poroto, harina/pellets y aceite de soja, en millones de USD. Principal generador de divisas del país.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-soja"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC / BCR</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== VI. Indicadores sociales y crédito ===== -->
+  <div class="section-head">
+    <span>Indicadores sociales y crédito</span>
+    <span class="roman">VI</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Pobreza e indigencia</h3>
+          <div class="card-sub">Porcentaje de personas bajo línea de pobreza y de indigencia en los 31 aglomerados urbanos. Datos semestrales desde la normalización del INDEC en 2016. Se ve el repunte por la crisis 2018-2019, el shock pandémico de 2020, el pico de 52,9% en el primer semestre de 2024 tras la devaluación, y la rápida desaceleración posterior.</div>
+        </div>
+        <span class="badge badge-period">SEMESTRAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-pobreza"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — Encuesta Permanente de Hogares</span></span>
+        <span>2016-S2 a 2025-S2</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Stock de préstamos hipotecarios UVA</h3>
+          <div class="card-sub">Saldo total de hipotecarios UVA al sector privado, en billones de pesos corrientes. La línea muestra el relanzamiento desde abril de 2024.</div>
+        </div>
+        <span class="badge badge-period">MENSUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-hipo-stock"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">BCRA — Informe Monetario</span></span>
+        <span>Mensual</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Créditos hipotecarios otorgados</h3>
+          <div class="card-sub">Cantidad anual de hipotecas escrituradas. Tras casi seis años de mínimos históricos, el crédito hipotecario volvió a aparecer en 2024–25 gracias a las líneas UVA.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-hipo-cant"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">BCRA / Fundación Tejido Urbano</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">AUH: valor real</h3>
+          <div class="card-sub">Monto mensual de la Asignación Universal por Hijo (zona general, 80% de bolsillo) en pesos constantes de mayo de 2026, deflactado por IPC. La línea muestra la pérdida sostenida hasta diciembre de 2023 y la recuperación posterior, primero por el aumento nominal del 100% en enero de 2024 y luego por la indexación mensual por inflación. <em>Los puntos intermedios son aproximaciones; los puntos clave (aumento 100% ene-2024, indexación posterior) están bien documentados.</em></div>
+        </div>
+        <span class="badge badge-period">MENSUAL</span>
+        <span class="badge badge-approx">APROX</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-auh"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">ANSES, Fundación Éforo, Chequeado, sobre IPC INDEC</span></span>
+        <span>2019–presente</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== VII. Cuentas públicas ===== -->
+  <div class="section-head">
+    <span>Cuentas públicas</span>
+    <span class="roman">VII</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Resultado fiscal del Sector Público Nacional</h3>
+          <div class="card-sub">Saldo primario (sin contar intereses) y financiero (con intereses) como porcentaje del PBI. Se ven los déficits crecientes del segundo mandato de CFK (revertido transitoriamente por Macri), el shock pandémico, y el ajuste histórico de 2024: primer superávit financiero desde 2010.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-fiscal"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Ministerio de Economía — Secretaría de Hacienda</span></span>
+        <span>2016–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Gasto público consolidado por nivel del Estado</h3>
+          <div class="card-sub">Porcentaje del PBI ejecutado por la Nación, las provincias (incluyendo CABA) y los municipios. En 2024 el gasto consolidado pasó del 40,7% al 35,6% del PBI, el menor nivel en al menos quince años.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-gasto"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Min. de Economía / OPC / IARAF</span></span>
+        <span>2019–2024</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== VIII. Actividad, empleo y política monetaria ===== -->
+  <div class="section-head">
+    <span>Actividad, empleo y política monetaria</span>
+    <span class="roman">VIII</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">EMAE: actividad económica mensual</h3>
+          <div class="card-sub">Estimador Mensual de Actividad Económica desestacionalizado (base 2004 = 100). Mide la marcha de la economía mes a mes y anticipa al PBI trimestral. Se ve el desplome de abril de 2020 por la pandemia, la recesión de mediados de 2023 a comienzos de 2024 y la recuperación posterior. En marzo de 2026 el índice saltó 3,5% desestacionalizado por la cosecha gruesa y se ubicó 5,5% por encima del nivel de un año antes.</div>
+        </div>
+        <span class="badge badge-period">MENSUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-emae"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — Cuentas Nacionales</span></span>
+        <span>2019–presente</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">PBI: variación anual</h3>
+          <div class="card-sub">Crecimiento del Producto Bruto Interno a precios constantes. La serie muestra el patrón de "serrucho" característico de la economía argentina: años de expansión seguidos de contracción. La barra roja de 2020 corresponde al impacto de la pandemia.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-pbi"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — Cuentas Nacionales</span></span>
+        <span>2013–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">PBI per cápita (PPA)</h3>
+          <div class="card-sub">Producto Bruto Interno por habitante medido en dólares internacionales constantes de 2021, ajustados por paridad de poder adquisitivo. Es la métrica que permite comparar de forma estable el nivel de ingreso real del país a lo largo del tiempo y contra otros países. La serie muestra el estancamiento de la última década: el nivel actual está por debajo del pico previo de 2011-2013. Los puntos marcados con asterisco (*) son estimaciones: el dato 2025 deriva del PBI real (+4,4%) y el crecimiento poblacional (≈1%); el 2026 toma la proyección del REM del BCRA (PBI ≈ +2,8%).</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-pbi-pc"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Banco Mundial — WDI / estimación propia para 2025–2026</span></span>
+        <span>2013–2026</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Tasa de desempleo</h3>
+          <div class="card-sub">Personas desocupadas sobre la población económicamente activa, en los 31 aglomerados urbanos. La EPH fue normalizada y reanudada en el segundo trimestre de 2016 tras la intervención de INDEC. Pico en el 2do trimestre de 2020 por la pandemia. El último dato disponible es el primer trimestre de 2026 (7,8%).</div>
+        </div>
+        <span class="badge badge-period">TRIMESTRAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-desempleo"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — EPH</span></span>
+        <span>2016-T2 a 2026-T1</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Reservas internacionales brutas del BCRA</h3>
+          <div class="card-sub">Stock al cierre de cada año, en miles de millones de USD. Incluyen oro, divisas, DEG del FMI y swap con China. La serie muestra el agotamiento del cepo 2013-2015, la acumulación con deuda externa en 2017-2018, y el ciclo reciente desde la asunción de Milei en diciembre 2023. <span id="meta-reservas-live" class="muted"></span></div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+        <span class="badge badge-live" id="badge-live-reservas" style="display:none">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-reservas"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">BCRA</span></span>
+        <span>2013–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Tasa de política monetaria del BCRA</h3>
+          <div class="card-sub">Tasa nominal anual de referencia (LELIQ / Pases / TAMAR según el régimen vigente). Desde la salida del cepo y el nuevo esquema de bandas, la tasa se desacopló del nivel de la inflación. <span id="meta-tpm-live" class="muted"></span></div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+        <span class="badge badge-live" id="badge-live-tpm" style="display:none">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-tpm"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">BCRA</span></span>
+        <span>Fin de cada año, 2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== IX. Salarios, deuda y competitividad ===== -->
+  <div class="section-head">
+    <span>Salarios, deuda y competitividad cambiaria</span>
+    <span class="roman">IX</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Salario real (RIPTE)</h3>
+          <div class="card-sub">Remuneración Imponible Promedio de los Trabajadores Estables, deflactada por IPC. Índice base diciembre 2019 = 100. Tras la devaluación de diciembre de 2023 el poder de compra cayó casi 30 puntos y se recompuso parcialmente con la baja de la inflación en 2024–2025. <em>Los puntos intermedios son aproximaciones que respetan la trayectoria documentada por la Secretaría de Trabajo, no lecturas mensuales literales.</em></div>
+        </div>
+        <span class="badge badge-period">MENSUAL</span>
+        <span class="badge badge-approx">APROX</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-salario"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Secretaría de Trabajo / IPC INDEC</span></span>
+        <span>2019–presente</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Tipo de cambio real multilateral (ITCRM)</h3>
+          <div class="card-sub">Mide la competitividad-precio del peso frente a las monedas de los principales socios comerciales. Un valor más alto implica peso más débil y exportaciones más competitivas. Salto en diciembre de 2023 por la devaluación y caída progresiva durante 2024–2025 por el atraso cambiario. <em>Los puntos son aproximaciones con base 17/12/2015 = 100; el dato diario oficial está disponible en la web del BCRA.</em></div>
+        </div>
+        <span class="badge badge-period">MENSUAL</span>
+        <span class="badge badge-approx" id="badge-approx-itcrm">APROX</span>
+        <span class="badge badge-live" id="badge-live-itcrm" style="display:none">EN VIVO</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-itcrm"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">BCRA (base 17/dic/2015 = 100)</span></span>
+        <span id="meta-itcrm">2019–presente</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Deuda pública bruta del SPN</h3>
+          <div class="card-sub">Stock total como porcentaje del PBI. El salto de 2023 refleja en gran parte la devaluación de diciembre de 2023 que infló el ratio en dólares.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-deuda"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Min. de Economía — Sec. de Finanzas / OPC</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Deuda neta consolidada del Estado</h3>
+          <div class="card-sub">Suma la deuda del Tesoro y el BCRA, resta las tenencias intra-sector público y la posición de liquidez (reservas netas y depósitos del Tesoro). Es una medida más realista de la carga financiera que la deuda bruta. Bajó casi 10 puntos del PBI durante 2024 por el "desarme" de los pasivos remunerados del BCRA (Leliqs y Pases) y rebotó parcialmente en 2025 por nueva emisión.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-deuda-neta"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Facimex Valores / Quantum Finanzas, sobre datos oficiales</span></span>
+        <span>2023–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Recaudación tributaria real</h3>
+          <div class="card-sub">Variación interanual real de los recursos tributarios nacionales (ARCA, ex AFIP), deflactada por IPC. La recaudación real cae con cada recesión (2016, 2018-2019, 2020 pandemia, 2023-2024) y rebota con la recuperación de la actividad.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-recaudacion"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">ARCA / Min. de Economía</span></span>
+        <span>2016–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== X. Producción sectorial ===== -->
+  <div class="section-head">
+    <span>Producción sectorial</span>
+    <span class="roman">X</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Industria y construcción</h3>
+          <div class="card-sub">Índices de Producción Industrial Manufacturero (IPI) y de la actividad de la Construcción (ISAC). Base 2004 = 100. Se ve el ciclo industrial: caída en las crisis 2018-2019 y 2024, rebotes 2021-2022. La construcción fue el sector más golpeado por el ajuste de obra pública en 2024.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-ipi-isac"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC</span></span>
+        <span>2016–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Patentamientos de autos 0 km</h3>
+          <div class="card-sub">Vehículos nuevos registrados en el país. 2013 fue el récord histórico previo al "impuesto a los autos de lujo" que recortó casi 40% las ventas en 2014. 2018 sufrió la crisis cambiaria. 2025 fue el mejor año desde 2018, impulsado por la baja de impuestos, el regreso del crédito prendario y la mayor competencia entre marcas. En los primeros cinco meses de 2026 se registraron 247.187 unidades, un 9,7% menos que en el mismo período de 2025.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-autos"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">ACARA / DNRPA</span></span>
+        <span>2013–may 2026</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Producción de litio</h3>
+          <div class="card-sub">Toneladas anuales de carbonato de litio equivalente (LCE). Argentina pasó de ser un productor marginal a quinto productor mundial. Las exportaciones cayeron en dólares en 2024 por el desplome del precio internacional, pero las cantidades exportadas se duplicaron.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-litio"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">CAEM / Sec. de Minería / USGS</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== XI. Consumo y comercio exterior por destino ===== -->
+  <div class="section-head">
+    <span>Consumo y destinos de exportación</span>
+    <span class="roman">XI</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Ventas reales: supermercados, shoppings y e-commerce</h3>
+          <div class="card-sub">Índices de ventas a precios constantes (deflactados por IPC), base 2019 = 100. La pandemia hundió los shoppings y disparó el comercio electrónico; el ajuste de 2024 golpeó al consumo masivo de supermercados mientras el e-commerce siguió creciendo.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-consumo"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC (super y shoppings) / CACE (e-commerce)</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Exportaciones por destino</h3>
+          <div class="card-sub">Composición anual de las exportaciones en millones de USD, por país o bloque de destino. Brasil pierde peso relativo mientras China y Estados Unidos lo ganan, especialmente con el boom de petróleo de Vaca Muerta y los embarques de soja a China.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-destinos"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">INDEC — ICA / Cancillería CEI</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== XII. Seguridad ===== -->
+  <div class="section-head">
+    <span>Seguridad</span>
+    <span class="roman">XII</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Tasa de homicidios dolosos</h3>
+          <div class="card-sub">Víctimas de homicidio doloso cada 100.000 habitantes. La tasa de 2025 (3,6) es la más baja desde que el SNIC publica la serie consolidada en 2014, ubicando a la Argentina entre los países con menor violencia letal de América Latina.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-homicidios"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">SNIC — Ministerio de Seguridad</span></span>
+        <span>2014–2025</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Femicidios — víctimas directas</h3>
+          <div class="card-sub">Mujeres cis y trans/travestis asesinadas por razones de género, según el Registro Nacional de Femicidios de la Justicia Argentina. Las 200 víctimas de 2025 representan el menor número de la serie iniciada en 2017.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-femicidios"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">RNFJA — Corte Suprema de Justicia</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Homicidios en Rosario</h3>
+          <div class="card-sub">Cantidad anual de homicidios en la ciudad que fue epicentro de la violencia narco. Tras el pico de 287 víctimas en 2022, el despliegue federal del Plan Bandera redujo los homicidios un 65% en 2024 y los mantuvo en niveles bajos durante 2025.</div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-rosario"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Observatorio de Seguridad de Santa Fe / MPA</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== XIII. Precios relativos por categoría ===== -->
+  <div class="section-head">
+    <span>Precios relativos por categoría</span>
+    <span class="roman">XIII</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="card full">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Alquileres, ropa y electrodomésticos en términos reales</h3>
+          <div class="card-sub">Índices de precios deflactados por el IPC nivel general, base 2019 = 100. Si la línea baja, el precio de la categoría sube menos que la inflación promedio (se vuelve relativamente más barata). Si sube, supera al IPC general. Los <strong>alquileres</strong> en nuevos contratos en CABA subieron por encima de la inflación durante la Ley de Alquileres (2020–2023) por el desplome de la oferta, y se desplomaron en términos reales en 2024 cuando la derogación liberó el mercado y la oferta se duplicó. La <strong>ropa</strong> y los <strong>electrodomésticos</strong> bajaron fuerte en términos reales en 2024–2025 por la apertura comercial, la baja del impuesto PAÍS y la recesión que comprimió el consumo discrecional. <em>Las tres series son reconstrucciones propias a partir de las aperturas del IPC y los precios de listado de Zonaprop, no son índices oficiales únicos publicados así.</em></div>
+        </div>
+        <span class="badge badge-period">ANUAL</span>
+        <span class="badge badge-approx">APROX</span>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chart-precios-cat"></canvas></div>
+      <div class="card-meta">
+        <span>Fuente: <span class="src">Zonaprop / IDECBA (alquileres CABA) — INDEC IPC (ropa y equipamiento)</span></span>
+        <span>2019–2025</span>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <div>
+    <strong>Sobre este tablero.</strong>
+    Datos en vivo (inflación, riesgo país, dólar, UVA) servidos por la <a href="https://argentinadatos.com" target="_blank" rel="noopener">API pública de ArgentinaDatos</a>, que a su vez consume al BCRA, el INDEC y JP Morgan. Series anuales tomadas de los informes oficiales del <a href="https://www.indec.gob.ar" target="_blank" rel="noopener">INDEC</a>, la <a href="https://www.argentina.gob.ar/economia/energia" target="_blank" rel="noopener">Secretaría de Energía</a>, el <a href="https://www.bcra.gob.ar" target="_blank" rel="noopener">BCRA</a> y la <a href="https://www.bcr.com.ar" target="_blank" rel="noopener">Bolsa de Comercio de Rosario</a>.
+  </div>
+  <div class="small">
+    <strong>Actualización.</strong> Se actualizan automáticamente al abrir la página: la inflación mensual e interanual, el UVA, las cuatro cotizaciones del dólar y el riesgo país (vía la <a href="https://argentinadatos.com" target="_blank" rel="noopener">API de ArgentinaDatos</a>); y las reservas internacionales, el ITCRM y la tasa de política monetaria (vía la <a href="https://www.bcra.gob.ar/estadisticas-indicadores/" target="_blank" rel="noopener">API oficial de Principales Variables del BCRA</a>). Cuando la API del BCRA responde, la serie histórica del ITCRM se reemplaza por los valores diarios oficiales del organismo. Si la API está caída o bloqueada por CORS, los datos en vivo no se muestran y el resto del tablero sigue funcionando.
+    <br><br>
+    El resto son series estáticas: reflejan la última publicación oficial al momento de armar el tablero y no se extienden solas cuando salen nuevos datos.
+    <br><br>
+    Algunas series están marcadas como aproximadas en su descripción (en particular RIPTE real, AUH real y los índices de precios relativos por categoría). En esos casos los valores siguen la trayectoria correcta documentada por las fuentes oficiales, pero los puntos individuales son reconstrucciones aproximadas, no lecturas literales del informe oficial.
+    <br><br>
+    Tablero no oficial, solo con fines informativos. Última carga: <span id="last-load">—</span>.
+  </div>
+</footer>
+
+<script>
+/* ====================================================
+   CONFIG: paleta y formato
+==================================================== */
+const PAL = {
+  ink: '#14181f',
+  inkSoft: '#4a4a44',
+  muted: '#8a8579',
+  rule: '#d9d2c2',
+  paper: '#fbf9f3',
+  pos: '#2d6a4f',
+  neg: '#9b2c2c',
+  accent: '#b87327',
+  accentSoft: '#e9c89a',
+  blue: '#1f3a5f',
+  blueSoft: '#4a6789',
+  series: ['#1f3a5f', '#b87327', '#2d6a4f', '#9b2c2c', '#4a6789', '#e9c89a', '#8a8579'],
+};
+
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = PAL.inkSoft;
+Chart.defaults.borderColor = PAL.rule;
+
+const fmtPct = v => (v == null) ? '—' : v.toFixed(1).replace('.', ',') + '%';
+const fmtPesos = v => (v == null) ? '—' : '$' + Math.round(v).toLocaleString('es-AR');
+const fmtBig = v => (v == null) ? '—' : v.toLocaleString('es-AR');
+const fmtUSD = v => (v == null) ? '—' : 'US$ ' + v.toLocaleString('es-AR');
+const fmtSignedUSD = v => {
+  if (v == null) return '—';
+  const sign = v < 0 ? '-' : '+';
+  return sign + 'US$ ' + Math.abs(v).toLocaleString('es-AR');
+};
+const fmtFechaCorta = d => {
+  if (d == null || d === '') return '—';
+  const dt = (d instanceof Date) ? d : new Date(d);
+  if (isNaN(dt.getTime())) return '—';
+  return dt.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' });
+};
+
+/* ====================================================
+   DATOS EMBEBIDOS (fuentes oficiales)
+==================================================== */
+
+// Balanza comercial anual, USD millones — INDEC ICA
+// Balanza comercial anual, USD millones — INDEC ICA
+// Serie histórica 2013-2018: salida del cepo Macri (2016-2017) duplicó importaciones y déficit;
+// la crisis cambiaria de 2018 forzó ajuste de importaciones.
+const BALANZA = {
+  anios: ['2013', '2014', '2015', '2016', '2017', '2018',
+          '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026 ene-may'],
+  exportaciones: [81660, 68407, 56752, 57737, 58427, 61781,
+                  65115, 54884, 77935, 88446, 66788, 79721, 87077, 40357],
+  importaciones: [73656, 65250, 59756, 55610, 66930, 65441,
+                  49125, 42354, 63185, 81522, 73714, 60822, 75791, 28576],
+};
+
+// Balanza energética anual, USD millones — INDEC / Sec. Energía
+// 2016-2018: déficit persistente por importaciones de gas y combustibles;
+// 2019: déficit casi cerrado por aumento de producción;
+// 2020-2022: oscilaciones por pandemia y guerra Ucrania;
+// 2023 en adelante: superávit creciente por Vaca Muerta;
+// 2025: récord histórico.
+const ENERGETICA = {
+  anios: ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025','2026 ene-may'],
+  saldo:  [ -2025, -3032, -2332,  -750,   830, -3070, -4400,  1840,  5668,  7800,  4400],
+};
+
+// Pobreza e indigencia, % personas — INDEC EPH
+// La EPH y la medición de pobreza fueron normalizadas en el T2-2016 tras la intervención.
+const POBREZA = {
+  labels: ['2016-S2','2017-S1','2017-S2','2018-S1','2018-S2',
+           '2019-S1','2019-S2','2020-S1','2020-S2','2021-S1','2021-S2','2022-S1','2022-S2','2023-S1','2023-S2','2024-S1','2024-S2','2025-S1','2025-S2'],
+  pobreza:    [30.3, 28.6, 25.7, 27.3, 32.0,
+               35.4, 35.5, 40.9, 42.0, 40.6, 37.3, 36.5, 39.2, 40.1, 41.7, 52.9, 38.1, 31.6, 28.2],
+  indigencia: [ 6.1,  6.2,  4.8,  4.9,  6.7,
+                7.7,  8.0, 10.5, 10.5, 10.7,  8.2,  8.8,  8.1,  9.3, 11.9, 18.1,  9.6,  6.9,  6.3],
+};
+
+// Producción de petróleo, miles barriles/día (promedio anual)
+// 2016: 510 (caída sostenida); 2017: 488 (mínimo histórico moderno);
+// 2018: 489 (rebote inicio shale); 2019: 498; 2024: 717 (récord 15 años);
+// 2025: 782 (Vaca Muerta acelera)
+const PETROLEO_BBD = {
+  anios: ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  produccion: [510, 488, 489, 498, 483, 525, 593, 660, 717, 782],
+};
+
+// Producción de gas natural, MMm3/día promedio anual
+// 2016-2018: declive convencional compensado por Vaca Muerta naciente
+const GAS = {
+  anios: ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  produccion: [121, 124, 138, 125, 116, 120, 127, 132, 139, 140],
+};
+
+// % no convencional sobre producción total de petróleo
+const VACA_MUERTA = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  no_convencional: [22, 28, 35, 42, 51, 60, 70],
+};
+
+// Exportaciones por gran rubro, USD millones, anual — INDEC ICA
+const RUBROS = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  PP:  [ 16986,  16213,  21000,  23677,  18017,  20899,  22500 ],  // productos primarios
+  MOA: [ 25996,  21834,  31798,  35017,  25500,  26500,  29000 ],  // manufacturas agropecuarias
+  MOI: [ 16775,  12504,  19533,  21671,  16800,  19500,  20300 ],  // manufacturas industriales
+  CyE: [  4358,   2410,   5604,   8081,   6471,   9677,  10600 ],  // combustibles y energía
+};
+
+// Índices de exportación, base 2004 = 100 (estimaciones INDEC)
+const PRECIOS_CANT = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  precios:    [126, 116, 145, 162, 138, 125, 122],
+  cantidades: [127, 117, 122, 121, 113, 134, 140],
+};
+
+// Exportaciones mineras, USD millones — Sec. de Minería
+const MINERIA = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  total: [3037, 2562, 3252, 3855, 4150, 4730, 5400],
+};
+
+// Producción de granos por campaña, millones de toneladas — BCR
+const GRANOS = {
+  campañas: ['2018/19', '2019/20', '2020/21', '2021/22', '2022/23', '2023/24', '2024/25'],
+  total:    [   141.5,    138.0,    128.0,    127.0,     83.6,    132.0,    135.7  ],
+  soja:     [    55.3,     49.0,     43.1,     43.3,     20.0,     50.3,     48.5  ],
+  maiz:     [    57.0,     58.4,     52.0,     49.5,     34.0,     49.0,     49.0  ],
+  trigo:    [    19.5,     17.6,     22.1,     22.4,     11.5,     14.5,     20.1  ],
+};
+
+// Faena y exportación de carne vacuna, miles t res con hueso — SENASA/IPCVA
+const CARNE = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  faena:        [3115, 3175, 3134, 3308, 3409, 3284, 3400],
+  exportacion:  [ 845,  819,  860, 1003,  954,  936,  990],
+};
+
+// Producción de leche, miles de millones de litros — OCLA
+const LECHE = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  litros: [10.34, 11.16, 11.51, 11.50, 10.71, 10.43, 10.85],
+};
+
+// Complejo sojero: exportaciones en USD millones
+const SOJA_EXP = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  poroto:        [3486, 2185, 4035, 4022, 1610, 3300, 2400],
+  harina_pellets:[9091, 8585,11140,12036, 6300, 9700, 9100],
+  aceite:        [3563, 4202, 7059, 8064, 4750, 5800, 4900],
+};
+
+// Stock de préstamos hipotecarios UVA al sector privado, billones de pesos (fin de mes)
+// Reactivación a partir de abril/2024
+const HIPO_STOCK = {
+  labels: ['2024-01','2024-04','2024-07','2024-10','2025-01','2025-04','2025-07','2025-10','2026-01','2026-04'],
+  stock:  [    0.45,    0.55,    0.85,    1.17,    1.95,    2.95,    4.20,    5.77,    6.80,    7.50  ],
+};
+
+// Cantidad de créditos hipotecarios otorgados por año
+const HIPO_CANT = {
+  anios: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+  cantidad: [12500, 7000, 4200, 3800, 3000, 11776, 38000],
+};
+
+// AUH valor real — índice base diciembre 2019 = 100, deflactado por IPC INDEC
+// Captura la pérdida 2019-2023 (~40% del valor real) y la recuperación 2024-26
+// con el aumento nominal 100% de enero 2024 + indexación mensual por inflación
+const AUH_REAL = {
+  labels: [
+    '2019-12','2020-06','2020-12','2021-06','2021-12','2022-06','2022-12',
+    '2023-06','2023-12','2024-01','2024-03','2024-06','2024-12',
+    '2025-06','2025-12','2026-05'
+  ],
+  indice: [100, 92, 85, 80, 76, 72, 68, 65, 63, 121, 119, 130, 137, 140, 141, 140],
+};
+
+// Resultado fiscal del SPN, % del PBI — Min. Economía
+// 2016-2018: gestión Macri con déficit primario y financiero crecientes;
+// 2019: primer año con primario casi equilibrado en años (cepo y ajuste);
+// 2024: primer superávit financiero desde 2010.
+const FISCAL = {
+  anios: ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  primario:   [-4.3, -3.8, -2.3, -0.4, -6.5, -3.0, -2.4, -2.7,  1.8,  1.4],
+  financiero: [-5.8, -5.9, -5.2, -3.8, -8.4, -4.5, -4.2, -4.4,  0.3,  0.2],
+};
+
+// Gasto público consolidado por nivel del Estado, % PBI
+// 2024 según Min. Economía / OPC; estimaciones previas IARAF / OPC
+const GASTO_NIVEL = {
+  anios: ['2019','2020','2021','2022','2023','2024'],
+  nacional:    [22.0, 25.6, 22.5, 22.0, 22.1, 18.1],
+  provincial:  [15.3, 16.5, 15.6, 15.4, 15.4, 14.5],  // incluye CABA
+  municipal:   [ 3.2,  3.6,  3.4,  3.3,  3.4,  3.0],
+};
+
+// Variación anual del PBI, INDEC (base 2004)
+// 2013-2018: serie revisada en 2018 por INDEC tras la normalización post-intervención
+const PBI = {
+  anios: ['2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  variacion: [2.4, -2.5, 2.7, -2.0, 2.9, -2.6, -2.0, -9.9, 10.7, 5.0, -1.6, -1.7, 4.4],
+};
+
+// PBI per cápita, USD PPP constantes de 2021 — Banco Mundial
+// Fuente: World Development Indicators (indicador NY.GDP.PCAP.PP.KD)
+// 2025 estimación basada en PBI +4,4% y población +1%; 2026 proyección parcial REM/FMI
+const PBI_PC = {
+  anios: ['2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025*','2026*'],
+  usd_ppp: [25400, 24400, 24900, 24200, 24800, 24000, 22070, 19950, 22200, 23330, 22950, 23250, 24050, 24450],
+};
+
+// Deuda neta consolidada del Estado (Tesoro + BCRA, neta de tenencias intra-sector
+// y reservas netas), % PBI — metodología Facimex Valores
+// El dato de 2023 corresponde al cierre del tercer trimestre (último antes del cambio de gobierno)
+const DEUDA_NETA = {
+  anios: ['2023 (Q3)','2024 (Q4)','2025 (Q4)'],
+  pct_pbi: [40.6, 31, 36],
+};
+
+// EMAE desestacionalizado, base 2004 = 100 — INDEC
+// Valores aproximados al cierre de cada trimestre + últimos meses publicados
+const EMAE = {
+  labels: [
+    '2019-01','2019-04','2019-07','2019-10',
+    '2020-01','2020-04','2020-07','2020-10',
+    '2021-01','2021-04','2021-07','2021-10',
+    '2022-01','2022-04','2022-07','2022-10',
+    '2023-01','2023-04','2023-07','2023-10',
+    '2024-01','2024-04','2024-07','2024-10',
+    '2025-01','2025-04','2025-07','2025-10','2025-12',
+    '2026-01','2026-02','2026-03'
+  ],
+  indice: [
+    146, 145, 144, 143,
+    144, 122, 134, 142,
+    142, 144, 146, 148,
+    150, 151, 152, 153,
+    153, 152, 150, 147,
+    144, 138, 142, 146,
+    149.5, 152.5, 153, 152, 153,
+    153.5, 154.5, 159.5
+  ],
+};
+
+// Tasa de desempleo trimestral, INDEC EPH 31 aglomerados
+// La EPH fue normalizada y reanudada en el T2-2016 tras la intervención.
+const DESEMPLEO = {
+  labels: [
+    '2016-T2','2016-T3','2016-T4',
+    '2017-T1','2017-T2','2017-T3','2017-T4',
+    '2018-T1','2018-T2','2018-T3','2018-T4',
+    '2019-T1','2019-T2','2019-T3','2019-T4',
+    '2020-T1','2020-T2','2020-T3','2020-T4',
+    '2021-T1','2021-T2','2021-T3','2021-T4',
+    '2022-T1','2022-T2','2022-T3','2022-T4',
+    '2023-T1','2023-T2','2023-T3','2023-T4',
+    '2024-T1','2024-T2','2024-T3','2024-T4',
+    '2025-T1','2025-T2','2025-T3','2025-T4',
+    '2026-T1'
+  ],
+  tasa: [
+     9.3,  8.5,  7.6,
+     9.2,  8.7,  8.3,  7.2,
+     9.1,  9.6,  9.0,  9.1,
+    10.1, 10.6,  9.7,  8.9,
+    10.4, 13.1, 11.7, 11.0,
+    10.2,  9.6,  8.2,  7.0,
+     7.0,  6.9,  7.1,  6.3,
+     6.9,  6.2,  5.7,  5.7,
+     7.7,  7.6,  6.9,  6.4,
+     7.9,  7.6,  7.0,  7.5,
+     7.8
+  ],
+};
+
+// Reservas brutas del BCRA, USD millones, al cierre del año
+const RESERVAS = {
+  anios: ['2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  // Cierre dic: 2013=30,599 (caída del cepo Cristina); 2014=31,443; 2015=25,563 (mínimo);
+  // 2016=38,772; 2017=55,055 (Macri toma deuda); 2018=65,806 (préstamo FMI);
+  // 2019=44,781; 2020=39,427; 2021=39,662; 2022=44,598;
+  // 2023=23,073 (asunción Milei); 2024=29,640; 2025=41,165
+  stock: [30599, 31443, 25563, 38772, 55055, 65806, 44781, 39427, 39662, 44598, 23073, 29640, 41165],
+};
+
+// Tasa de política monetaria del BCRA al cierre del año, TNA %
+// 2019: LELIQ 55%; 2020: LELIQ 38%; 2021: LELIQ 38%; 2022: LELIQ 75%;
+// 2023: LELIQ 100%; 2024: Pases pasivos 32%; 2025: TAMAR 25% aprox
+const TPM = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  tasa:  [55, 38, 38, 75, 100, 32, 25],
+};
+
+// Salario real RIPTE — Sec. Trabajo / IPC INDEC
+// Índice base diciembre 2019 = 100, deflactado
+const SALARIO_REAL = {
+  labels: ['2019-12','2020-06','2020-12','2021-06','2021-12','2022-06','2022-12',
+           '2023-06','2023-11','2024-03','2024-09','2024-12','2025-06','2025-12','2026-04'],
+  indice: [100,    94,       93,       91,       95,       93,       92,
+           90,     89,       71,       82,       86,       89,       91,       90],
+};
+
+// ITCRM — Índice de Tipo de Cambio Real Multilateral del BCRA
+// Base 17/12/2015 = 100, valores mensuales aproximados a fin de mes
+const ITCRM = {
+  labels: ['2019-06','2019-12','2020-06','2020-12','2021-06','2021-12',
+           '2022-06','2022-12','2023-06','2023-11','2023-12','2024-06',
+           '2024-12','2025-06','2025-12','2026-05'],
+  indice: [   95,      125,       108,      100,      88,       82,
+              80,       90,       80,       70,      167,      105,
+              82,       76,       80,       82],
+};
+
+// Deuda pública bruta del Sector Público Nacional, % del PBI
+const DEUDA = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  pct_pbi: [90, 103, 80, 85, 155, 88, 78],
+};
+
+// Recaudación tributaria nacional, variación interanual real (%)
+// Fuente: AFIP/ARCA, deflactada por IPC INDEC
+const RECAUDACION = {
+  anios: ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  variacion: [-3.0,  1.8, -7.0, -3.5, -10.0, 14.5,  5.0, -3.5, -6.8,  4.0],
+};
+
+// IPI manufacturero e ISAC construcción, base 2004 = 100, promedio anual
+// 2016-2018: caída fuerte de la industria y construcción durante crisis Macri;
+// 2024: derrumbe pandemia-comparable en construcción;
+// 2025: recuperación parcial.
+const IPI_ISAC = {
+  anios: ['2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  ipi:   [ 95,  96,  91,  90,  86, 100, 105, 104,  99, 102],
+  isac:  [ 95, 105, 105,  80,  70, 100, 110, 108,  80,  84],
+};
+
+// Patentamientos de autos 0 km, total anual — ACARA
+// 2013: récord histórico antes del impuesto a "autos de lujo" de fines de 2013
+// 2014: caída fuerte por restricciones y impuesto
+// 2018: crisis cambiaria recortó las ventas
+const AUTOS = {
+  anios: ['2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025','2026 ene-may'],
+  unidades: [955170, 614118, 614469, 707825, 884659, 783329,
+             458684, 333973, 381415, 405712, 449506, 414211, 612178, 247187],
+};
+
+// Producción y exportación de carbonato de litio, miles de toneladas anuales
+// LCE (Carbonato de Litio Equivalente) — CAEM / Sec. de Minería
+const LITIO = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  exportacion: [24.0, 16.5, 25.4, 33.0, 39.6, 67.8, 100.0],  // toneladas exportadas (miles)
+  produccion:  [ 6.4,  5.9,  5.9, 33.0, 46.0, 74.6, 103.8],  // toneladas LCE producidas (miles)
+};
+
+// Ventas reales por canal, índice base 2019 = 100, deflactado por IPC
+// Super y shoppings: INDEC; e-commerce: CACE (deflactado)
+const CONSUMO = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  super:      [100, 104, 106, 110, 111, 106, 107],
+  shoppings:  [100,  45,  88, 122, 142, 119, 131],
+  ecommerce:  [100, 225, 215, 226, 215, 351, 435],
+};
+
+// Exportaciones por destino, USD millones (% sobre total anual)
+// Brasil, China, UE, EE.UU., Chile, Otros — INDEC / Cancillería
+const DESTINOS = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  brasil:  [ 10818,  6976, 11770, 13902,  8800, 13632, 12800],
+  china:   [  6753,  5234,  6047,  8089,  5160,  6378,  9840],
+  ue:      [  8475,  6586,  9352, 10613,  8700,  8211,  8447],
+  eeuu:    [  3850,  3344,  4884,  6191,  4500,  6457,  8359],
+  chile:   [  3000,  2200,  3600,  4955,  3800,  6298,  6700],
+  otros:   [ 32219, 30544, 42282, 44696, 35828, 38745, 40931],
+};
+
+// Tasa de homicidios dolosos cada 100.000 habitantes — SNIC
+// La serie consolidada del Sistema Nacional de Información Criminal arranca en 2014.
+const HOMICIDIOS = {
+  anios: ['2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'],
+  tasa:  [ 6.8,  6.6,  6.0,  5.2,  5.3,  5.3,  5.4,  4.6,  4.2,  4.4,  3.8,  3.6],
+};
+
+// Femicidios — víctimas directas, RNFJA Corte Suprema
+const FEMICIDIOS = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  victimas: [260, 251, 231, 226, 250, 228, 200],
+};
+
+// Homicidios en la ciudad de Rosario — Observatorio Sta. Fe / MPA
+const ROSARIO = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  homicidios: [251, 256, 257, 287, 262, 91, 115],
+};
+
+// Precios relativos por categoría — deflactados por IPC nivel general, base 2019 = 100
+// Calculados como (IPC categoría / IPC general) × 100 (normalizado a 2019)
+// Alquileres: precios de nuevos listados en CABA (Zonaprop / IDECBA);
+// Prendas y Equipamiento: aperturas del IPC INDEC.
+const PRECIOS_CAT = {
+  anios: ['2019','2020','2021','2022','2023','2024','2025'],
+  alquileres:       [100, 95,100,108,122, 85, 82],
+  prendas:          [100,105,113,118,120, 95, 83],
+  electrodomesticos:[100,100,105,105,100, 80, 70],
+};
+
+/* ====================================================
+   FETCH DE APIs (ArgentinaDatos)
+==================================================== */
+const API = 'https://api.argentinadatos.com/v1';
+const CUTOFF = '2019-01-01';
+
+// Cuando se abre el archivo con file:// muchos navegadores bloquean los fetch
+// a https://. También algunos browsers/strict-mode pueden bloquear por CORS.
+// Probamos primero el endpoint directo y, si falla, lo intentamos a través de
+// proxies CORS públicos (los datos son todos públicos, no hay riesgo).
+const PROXIES = [
+  url => url,                                                            // directo
+  url => 'https://corsproxy.io/?' + encodeURIComponent(url),             // proxy 1
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),// proxy 2
+];
+
+async function fetchJSON(url) {
+  let lastErr;
+  for (const wrap of PROXIES) {
+    try {
+      const r = await fetch(wrap(url), { cache: 'no-store' });
+      if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
+      return await r.json();
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('No se pudo obtener ' + url);
+}
+
+/* ====================================================
+   BCRA LIVE: API oficial de Principales Variables
+   v3.0: https://api.bcra.gob.ar/estadisticas/v3.0/Monetarias
+   Si la API responde, mostramos el último valor publicado y
+   marcamos los cards con badge "EN VIVO". Caída silenciosa.
+==================================================== */
+async function liveBCRA() {
+  let vars;
+  try {
+    const r = await fetchJSON('https://api.bcra.gob.ar/estadisticas/v3.0/Monetarias');
+    if (!r || !r.results || !r.results.length) return;
+    vars = r.results;
+  } catch (e) { console.warn('BCRA live: lista variables falló', e); return; }
+
+  // Buscamos por substring de descripción (la API trae más de 40 variables)
+  const find = (substr) => vars.find(v => v.descripcion &&
+    v.descripcion.toLowerCase().includes(substr.toLowerCase()));
+
+  // Reservas internacionales (en USD millones)
+  const reservas = find('Reservas Internacionales del BCRA');
+  if (reservas && reservas.valor != null) {
+    const valor = 'US$ ' + Math.round(reservas.valor).toLocaleString('es-AR') + ' M';
+    showLive('reservas', valor, reservas.fecha);
+  }
+
+  // ITCRM (Índice de Tipo de Cambio Real Multilateral)
+  const itcrm = find('Tipo de Cambio Real Multilateral');
+  if (itcrm && itcrm.valor != null) {
+    showLive('itcrm', itcrm.valor.toFixed(1), itcrm.fecha);
+    extendItcrmConBCRA(itcrm.idVariable).catch(e => console.warn('ITCRM histórico falló', e));
+  }
+
+  // Tasa de Política Monetaria (puede aparecer como "Política Monetaria" o "TAMAR")
+  const tpm = find('Tasa de Política Monetaria') || find('TAMAR');
+  if (tpm && tpm.valor != null) {
+    showLive('tpm', tpm.valor.toFixed(2).replace('.', ',') + '% TNA', tpm.fecha);
+  }
+}
+
+function showLive(name, value, fecha) {
+  const f = fmtFechaCorta(fecha);
+  const metaEl = document.getElementById('meta-' + name + '-live');
+  if (metaEl) {
+    metaEl.innerHTML = ' <strong>Último valor BCRA:</strong> ' + value + ' al ' + f + '.';
+  }
+  const metaItcrm = document.getElementById('meta-itcrm');
+  if (name === 'itcrm' && metaItcrm) {
+    metaItcrm.textContent = '2019–' + f;
+  }
+  const badge = document.getElementById('badge-live-' + name);
+  if (badge) badge.style.display = 'inline-block';
+}
+
+// Intenta reemplazar la serie ITCRM aproximada con datos diarios reales
+// del BCRA, downsampleados a último valor de cada mes desde 2019.
+async function extendItcrmConBCRA(idVariable) {
+  const desde = '2019-01-01';
+  const hasta = new Date().toISOString().slice(0, 10);
+  const url = 'https://api.bcra.gob.ar/estadisticas/v3.0/Monetarias/' + idVariable +
+              '?desde=' + desde + '&hasta=' + hasta + '&limit=3000';
+  const r = await fetchJSON(url);
+  if (!r || !r.results || r.results.length < 100) return;
+
+  // Tomamos el último valor de cada mes (sort por fecha asc)
+  const sorted = r.results.slice().sort((a, b) =>
+    (a.fecha || '').localeCompare(b.fecha || ''));
+  const monthly = new Map();
+  for (const d of sorted) {
+    if (!d.fecha || d.fecha < '2019-01-01') continue;
+    monthly.set(d.fecha.slice(0, 7), d.valor);
+  }
+  const labels = Array.from(monthly.keys()).sort();
+  if (labels.length < 12) return;
+  const values = labels.map(k => monthly.get(k));
+
+  const chart = Chart.getChart('chart-itcrm');
+  if (!chart) return;
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = values;
+  chart.update('none');
+
+  // El gráfico ahora es serie oficial: sacar APROX
+  const approxBadge = document.getElementById('badge-approx-itcrm');
+  if (approxBadge) approxBadge.style.display = 'none';
+}
+
+function filtrarDesde2019(arr) {
+  return arr.filter(d => d.fecha && d.fecha >= CUTOFF);
+}
+
+/* ====================================================
+   COMMON CHART OPTS
+==================================================== */
+function baseOpts(extra = {}) {
+  const defaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: PAL.ink,
+        titleFont: { family: "'Fraunces', serif", size: 12, weight: '500' },
+        bodyFont: { family: "'JetBrains Mono', monospace", size: 11 },
+        padding: 10,
+        cornerRadius: 2,
+        displayColors: true,
+        boxPadding: 4,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false, drawBorder: false },
+        ticks: { color: PAL.muted, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+      },
+      y: {
+        grid: { color: PAL.rule, drawBorder: false },
+        ticks: { color: PAL.muted },
+      },
+    },
+  };
+  // Merge shallow plus per-key merge for plugins and scales to preserve defaults
+  return {
+    ...defaults,
+    ...extra,
+    plugins: { ...defaults.plugins, ...(extra.plugins || {}) },
+    scales: { ...defaults.scales, ...(extra.scales || {}) },
+  };
+}
+
+/* ====================================================
+   STAT CARD HELPER
+==================================================== */
+function setStat(key, value, sub, isPositiveBetter = null, prev = null) {
+  document.getElementById('v-' + key).textContent = value;
+  const subEl = document.getElementById('d-' + key);
+  subEl.innerHTML = sub;
+}
+
+/* ====================================================
+   INFLACIÓN
+==================================================== */
+async function renderInflacion() {
+  try {
+    const raw = await fetchJSON(API + '/finanzas/indices/inflacion');
+    const data = filtrarDesde2019(raw);
+    const ultimo = data[data.length - 1];
+    const prev = data[data.length - 2];
+    const variacion = (ultimo.valor - prev.valor).toFixed(1);
+    setStat('inflacion', fmtPct(ultimo.valor),
+      `${fmtFechaCorta(ultimo.fecha)} · <span class="${ultimo.valor > prev.valor ? 'up' : 'down'}">${variacion >= 0 ? '+' : ''}${variacion} pp vs mes anterior</span>`);
+
+    new Chart(document.getElementById('chart-inflacion'), {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.fecha),
+        datasets: [{
+          data: data.map(d => d.valor),
+          backgroundColor: data.map(d => d.valor > 10 ? PAL.neg : (d.valor > 5 ? PAL.accent : PAL.pos)),
+          borderWidth: 0,
+        }],
+      },
+      options: baseOpts({
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'year', tooltipFormat: 'MMM yyyy' },
+            grid: { display: false, drawBorder: false },
+            ticks: { color: PAL.muted },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: PAL.rule, drawBorder: false },
+            ticks: { color: PAL.muted, callback: v => v + '%' },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: PAL.ink,
+            callbacks: {
+              title: items => fmtFechaCorta(items[0].parsed.x),
+              label: ctx => 'IPC mensual: ' + ctx.parsed.y.toFixed(1).replace('.', ',') + '%',
+            },
+          },
+        },
+      }),
+    });
+  } catch (e) {
+    console.error('Inflación:', e);
+    setStat('inflacion', '—', '<span class="down">Sin datos</span>');
+    throw e;
+  }
+}
+
+/* ====================================================
+   INFLACIÓN INTERANUAL
+==================================================== */
+async function renderInflacionIA() {
+  try {
+    const raw = await fetchJSON(API + '/finanzas/indices/inflacionInteranual');
+    const data = filtrarDesde2019(raw);
+    const ultimo = data[data.length - 1];
+    setStat('ia', fmtPct(ultimo.valor), `${fmtFechaCorta(ultimo.fecha)} · interanual`);
+
+    new Chart(document.getElementById('chart-inflacion-ia'), {
+      type: 'line',
+      data: {
+        labels: data.map(d => d.fecha),
+        datasets: [{
+          data: data.map(d => d.valor),
+          borderColor: PAL.neg,
+          backgroundColor: 'rgba(155,44,44,0.08)',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.25,
+          fill: true,
+        }],
+      },
+      options: baseOpts({
+        scales: {
+          x: { type: 'time', time: { unit: 'year' }, grid: { display: false } },
+          y: { ticks: { callback: v => v + '%' }, grid: { color: PAL.rule } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: PAL.ink,
+            callbacks: {
+              title: items => fmtFechaCorta(items[0].parsed.x),
+              label: ctx => 'IPC i.a.: ' + ctx.parsed.y.toFixed(1).replace('.', ',') + '%',
+            },
+          },
+        },
+      }),
+    });
+  } catch (e) {
+    console.error('IA:', e);
+    setStat('ia', '—', '<span class="down">Sin datos</span>');
+    throw e;
+  }
+}
+
+/* ====================================================
+   UVA
+==================================================== */
+async function renderUVA() {
+  try {
+    const raw = await fetchJSON(API + '/finanzas/indices/uva');
+    const data = filtrarDesde2019(raw);
+    const ultimo = data[data.length - 1];
+    setStat('uva', '$' + ultimo.valor.toLocaleString('es-AR', { maximumFractionDigits: 2 }),
+      `${fmtFechaCorta(ultimo.fecha)} · valor diario`);
+
+    new Chart(document.getElementById('chart-uva'), {
+      type: 'line',
+      data: {
+        labels: data.map(d => d.fecha),
+        datasets: [{
+          data: data.map(d => d.valor),
+          borderColor: PAL.accent,
+          backgroundColor: 'rgba(184,115,39,0.10)',
+          borderWidth: 1.8,
+          pointRadius: 0,
+          tension: 0.1,
+          fill: true,
+        }],
+      },
+      options: baseOpts({
+        scales: {
+          x: { type: 'time', time: { unit: 'year' }, grid: { display: false } },
+          y: { ticks: { callback: v => '$' + v.toLocaleString('es-AR') } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: PAL.ink,
+            callbacks: {
+              title: items => fmtFechaCorta(items[0].parsed.x),
+              label: ctx => 'UVA: $' + ctx.parsed.y.toLocaleString('es-AR', { maximumFractionDigits: 2 }),
+            },
+          },
+        },
+      }),
+    });
+  } catch (e) {
+    console.error('UVA:', e);
+    setStat('uva', '—', '<span class="down">Sin datos</span>');
+    throw e;
+  }
+}
+
+/* ====================================================
+   DÓLAR (multi-line)
+==================================================== */
+async function renderDolares() {
+  try {
+    const casas = ['oficial', 'blue', 'bolsa', 'contadoconliqui'];
+    const labels = { oficial: 'Oficial', blue: 'Blue', bolsa: 'MEP', contadoconliqui: 'CCL' };
+    const keyStat = { oficial: 'oficial', blue: 'blue', bolsa: 'mep', contadoconliqui: 'ccl' };
+    const colors = { oficial: PAL.blue, blue: PAL.accent, bolsa: PAL.pos, contadoconliqui: PAL.neg };
+
+    const series = await Promise.all(casas.map(async (casa) => {
+      const raw = await fetchJSON(API + '/cotizaciones/dolares/' + casa);
+      return { casa, data: filtrarDesde2019(raw) };
+    }));
+
+    // Set stat cards using venta
+    const blueData = series.find(s => s.casa === 'blue').data;
+    series.forEach(s => {
+      const u = s.data[s.data.length - 1];
+      if (!u) return;
+      setStat(keyStat[s.casa], fmtPesos(u.venta), `${fmtFechaCorta(u.fecha)} · venta`);
+    });
+
+    // Brecha chart (calculate inline)
+    const oficialMap = new Map(series.find(s => s.casa === 'oficial').data.map(d => [d.fecha, d.venta]));
+    const brecha = blueData.map(d => {
+      const of = oficialMap.get(d.fecha);
+      if (!of) return null;
+      return { fecha: d.fecha, valor: (d.venta / of - 1) * 100 };
+    }).filter(Boolean);
+
+    new Chart(document.getElementById('chart-dolares'), {
+      type: 'line',
+      data: {
+        datasets: series.map(s => ({
+          label: labels[s.casa],
+          data: s.data.map(d => ({ x: d.fecha, y: d.venta })),
+          borderColor: colors[s.casa],
+          backgroundColor: colors[s.casa] + '20',
+          borderWidth: 1.6,
+          pointRadius: 0,
+          tension: 0.1,
+        })),
+      },
+      options: baseOpts({
+        scales: {
+          x: { type: 'time', time: { unit: 'year' }, grid: { display: false } },
+          y: { ticks: { callback: v => '$' + v.toLocaleString('es-AR') }, grid: { color: PAL.rule } },
+        },
+        plugins: {
+          legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: PAL.ink,
+            callbacks: {
+              title: items => fmtFechaCorta(items[0].raw.x),
+              label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('es-AR'),
+            },
+          },
+        },
+      }),
+    });
+
+    // Brecha cambiaria
+    new Chart(document.getElementById('chart-brecha'), {
+      type: 'line',
+      data: {
+        labels: brecha.map(d => d.fecha),
+        datasets: [{
+          data: brecha.map(d => d.valor),
+          borderColor: PAL.accent,
+          backgroundColor: 'rgba(184,115,39,0.12)',
+          borderWidth: 1.6,
+          pointRadius: 0,
+          tension: 0.1,
+          fill: true,
+        }],
+      },
+      options: baseOpts({
+        scales: {
+          x: { type: 'time', time: { unit: 'year' }, grid: { display: false } },
+          y: { ticks: { callback: v => v.toFixed(0) + '%' } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: PAL.ink,
+            callbacks: {
+              title: items => fmtFechaCorta(items[0].parsed.x),
+              label: ctx => 'Brecha blue/oficial: ' + ctx.parsed.y.toFixed(0) + '%',
+            },
+          },
+        },
+      }),
+    });
+
+  } catch (e) {
+    console.error('Dólares:', e);
+    ['oficial', 'blue', 'mep', 'ccl'].forEach(k => setStat(k, '—', '<span class="down">Sin datos</span>'));
+    throw e;
+  }
+}
+
+/* ====================================================
+   RIESGO PAÍS
+==================================================== */
+async function renderRiesgo() {
+  try {
+    const raw = await fetchJSON(API + '/finanzas/indices/riesgo-pais');
+    const data = filtrarDesde2019(raw);
+    const ultimo = data[data.length - 1];
+    setStat('riesgo', fmtBig(ultimo.valor) + ' pb', `${fmtFechaCorta(ultimo.fecha)} · EMBI+`);
+
+    new Chart(document.getElementById('chart-riesgo'), {
+      type: 'line',
+      data: {
+        labels: data.map(d => d.fecha),
+        datasets: [{
+          data: data.map(d => d.valor),
+          borderColor: PAL.blue,
+          backgroundColor: 'rgba(31,58,95,0.10)',
+          borderWidth: 1.6,
+          pointRadius: 0,
+          tension: 0.1,
+          fill: true,
+        }],
+      },
+      options: baseOpts({
+        scales: {
+          x: { type: 'time', time: { unit: 'year' }, grid: { display: false } },
+          y: { ticks: { callback: v => v.toLocaleString('es-AR') } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: PAL.ink,
+            callbacks: {
+              title: items => fmtFechaCorta(items[0].parsed.x),
+              label: ctx => 'Riesgo país: ' + ctx.parsed.y.toLocaleString('es-AR') + ' pb',
+            },
+          },
+        },
+      }),
+    });
+  } catch (e) {
+    console.error('Riesgo:', e);
+    setStat('riesgo', '—', '<span class="down">Sin datos</span>');
+    throw e;
+  }
+}
+
+/* ====================================================
+   CHARTS CON DATOS EMBEBIDOS
+==================================================== */
+
+function renderBalanza() {
+  const saldo = BALANZA.exportaciones.map((e, i) => e - BALANZA.importaciones[i]);
+  new Chart(document.getElementById('chart-balanza'), {
+    type: 'bar',
+    data: {
+      labels: BALANZA.anios,
+      datasets: [
+        { label: 'Exportaciones', data: BALANZA.exportaciones, backgroundColor: PAL.blue, borderWidth: 0, order: 2 },
+        { label: 'Importaciones', data: BALANZA.importaciones.map(v => -v), backgroundColor: PAL.accent, borderWidth: 0, order: 2 },
+        { label: 'Saldo',         data: saldo, type: 'line', borderColor: PAL.neg, backgroundColor: PAL.neg, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: PAL.paper, pointBorderColor: PAL.neg, pointBorderWidth: 2, tension: 0, order: 1 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: {
+          stacked: false,
+          ticks: { callback: v => 'US$ ' + Math.abs(v).toLocaleString('es-AR') + ' M' },
+          grid: { color: PAL.rule },
+        },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': US$ ' + Math.abs(ctx.parsed.y).toLocaleString('es-AR') + ' millones',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderEnergetica() {
+  new Chart(document.getElementById('chart-energia'), {
+    type: 'bar',
+    data: {
+      labels: ENERGETICA.anios,
+      datasets: [{
+        label: 'Saldo energético',
+        data: ENERGETICA.saldo,
+        backgroundColor: ENERGETICA.saldo.map(v => v >= 0 ? PAL.pos : PAL.neg),
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => (v >= 0 ? '+' : '-') + 'US$ ' + Math.abs(v).toLocaleString('es-AR') + ' M' },
+          grid: { color: PAL.rule },
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Saldo: ' + fmtSignedUSD(ctx.parsed.y) + ' millones' },
+        },
+      },
+    }),
+  });
+}
+
+function renderRubros() {
+  new Chart(document.getElementById('chart-rubros'), {
+    type: 'bar',
+    data: {
+      labels: RUBROS.anios,
+      datasets: [
+        { label: 'Productos primarios',  data: RUBROS.PP,  backgroundColor: PAL.pos,    borderWidth: 0 },
+        { label: 'Manuf. agropecuarias', data: RUBROS.MOA, backgroundColor: PAL.accent, borderWidth: 0 },
+        { label: 'Manuf. industriales',  data: RUBROS.MOI, backgroundColor: PAL.blue,   borderWidth: 0 },
+        { label: 'Combustibles y energía', data: RUBROS.CyE, backgroundColor: PAL.neg,  borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => 'US$ ' + (v/1000).toFixed(0) + 'k' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': US$ ' + ctx.parsed.y.toLocaleString('es-AR') + ' M' },
+        },
+      },
+    }),
+  });
+}
+
+function renderPreciosCant() {
+  new Chart(document.getElementById('chart-precios-cant'), {
+    type: 'line',
+    data: {
+      labels: PRECIOS_CANT.anios,
+      datasets: [
+        { label: 'Precios',     data: PRECIOS_CANT.precios,    borderColor: PAL.neg,  backgroundColor: PAL.neg,  borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+        { label: 'Cantidades',  data: PRECIOS_CANT.cantidades, borderColor: PAL.blue, backgroundColor: PAL.blue, borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' (base 2004=100)' },
+        },
+      },
+    }),
+  });
+}
+
+function renderPetroleo() {
+  new Chart(document.getElementById('chart-petroleo'), {
+    type: 'bar',
+    data: {
+      labels: PETROLEO_BBD.anios,
+      datasets: [{
+        data: PETROLEO_BBD.produccion,
+        backgroundColor: PAL.ink,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => v + 'k bbd' },
+          grid: { color: PAL.rule },
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.parsed.y.toLocaleString('es-AR') + ' mil barriles diarios' },
+        },
+      },
+    }),
+  });
+}
+
+function renderGas() {
+  new Chart(document.getElementById('chart-gas'), {
+    type: 'bar',
+    data: {
+      labels: GAS.anios,
+      datasets: [{
+        data: GAS.produccion,
+        backgroundColor: PAL.blue,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => v + ' MMm³/d' },
+          grid: { color: PAL.rule },
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.parsed.y + ' MMm³/día' },
+        },
+      },
+    }),
+  });
+}
+
+function renderVaca() {
+  new Chart(document.getElementById('chart-vaca'), {
+    type: 'line',
+    data: {
+      labels: VACA_MUERTA.anios,
+      datasets: [{
+        data: VACA_MUERTA.no_convencional,
+        borderColor: PAL.accent,
+        backgroundColor: 'rgba(184,115,39,0.15)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.accent,
+        pointBorderWidth: 2,
+        tension: 0.25,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => v + '%' },
+          grid: { color: PAL.rule },
+          max: 100,
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'No convencional: ' + ctx.parsed.y + '% del crudo' },
+        },
+      },
+    }),
+  });
+}
+
+function renderMineria() {
+  new Chart(document.getElementById('chart-mineria'), {
+    type: 'bar',
+    data: {
+      labels: MINERIA.anios,
+      datasets: [{
+        data: MINERIA.total,
+        backgroundColor: PAL.accent,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => 'US$ ' + v.toLocaleString('es-AR') + ' M' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Export. mineras: US$ ' + ctx.parsed.y.toLocaleString('es-AR') + ' millones' },
+        },
+      },
+    }),
+  });
+}
+
+function renderGranos() {
+  new Chart(document.getElementById('chart-granos'), {
+    type: 'bar',
+    data: {
+      labels: GRANOS.campañas,
+      datasets: [
+        { label: 'Soja',  data: GRANOS.soja,  backgroundColor: PAL.accent, borderWidth: 0 },
+        { label: 'Maíz',  data: GRANOS.maiz,  backgroundColor: PAL.pos,    borderWidth: 0 },
+        { label: 'Trigo', data: GRANOS.trigo, backgroundColor: PAL.blue,   borderWidth: 0 },
+        { label: 'Otros', data: GRANOS.total.map((t,i) => t - GRANOS.soja[i] - GRANOS.maiz[i] - GRANOS.trigo[i]), backgroundColor: PAL.muted, borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => v + ' Mt' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1).replace('.',',') + ' Mt' },
+        },
+      },
+    }),
+  });
+}
+
+function renderCarne() {
+  new Chart(document.getElementById('chart-carne'), {
+    type: 'bar',
+    data: {
+      labels: CARNE.anios,
+      datasets: [
+        { label: 'Faena total',         data: CARNE.faena,       backgroundColor: PAL.ink,    borderWidth: 0 },
+        { label: 'Exportación',         data: CARNE.exportacion, backgroundColor: PAL.accent, borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => (v/1000).toFixed(1) + ' M tn' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('es-AR') + ' mil tn' },
+        },
+      },
+    }),
+  });
+}
+
+function renderLacteos() {
+  new Chart(document.getElementById('chart-lacteos'), {
+    type: 'line',
+    data: {
+      labels: LECHE.anios,
+      datasets: [{
+        data: LECHE.litros,
+        borderColor: PAL.blue,
+        backgroundColor: 'rgba(31,58,95,0.12)',
+        borderWidth: 2.2,
+        pointRadius: 4,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.blue,
+        pointBorderWidth: 2,
+        tension: 0.25,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v.toFixed(1) + ' mM L' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.parsed.y.toLocaleString('es-AR') + ' miles de millones de litros' },
+        },
+      },
+    }),
+  });
+}
+
+function renderSoja() {
+  new Chart(document.getElementById('chart-soja'), {
+    type: 'bar',
+    data: {
+      labels: SOJA_EXP.anios,
+      datasets: [
+        { label: 'Harina y pellets', data: SOJA_EXP.harina_pellets, backgroundColor: PAL.accent, borderWidth: 0 },
+        { label: 'Aceite',           data: SOJA_EXP.aceite,         backgroundColor: PAL.pos,    borderWidth: 0 },
+        { label: 'Poroto',           data: SOJA_EXP.poroto,         backgroundColor: PAL.blue,   borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => 'US$ ' + (v/1000).toFixed(0) + 'k' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': US$ ' + ctx.parsed.y.toLocaleString('es-AR') + ' M' },
+        },
+      },
+    }),
+  });
+}
+
+function renderPobreza() {
+  new Chart(document.getElementById('chart-pobreza'), {
+    type: 'line',
+    data: {
+      labels: POBREZA.labels,
+      datasets: [
+        { label: 'Pobreza',    data: POBREZA.pobreza,    borderColor: PAL.neg,    backgroundColor: 'rgba(155,44,44,0.10)',   borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: PAL.paper, pointBorderColor: PAL.neg,    pointBorderWidth: 1.8, tension: 0.2, fill: true },
+        { label: 'Indigencia', data: POBREZA.indigencia, borderColor: PAL.accent, backgroundColor: 'rgba(184,115,39,0.15)',  borderWidth: 2.2, pointRadius: 4, pointBackgroundColor: PAL.paper, pointBorderColor: PAL.accent, pointBorderWidth: 1.8, tension: 0.2, fill: true },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { ticks: { callback: v => v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1).replace('.',',') + '%' },
+        },
+      },
+    }),
+  });
+}
+
+function renderHipoStock() {
+  new Chart(document.getElementById('chart-hipo-stock'), {
+    type: 'line',
+    data: {
+      labels: HIPO_STOCK.labels,
+      datasets: [{
+        data: HIPO_STOCK.stock,
+        borderColor: PAL.pos,
+        backgroundColor: 'rgba(45,106,79,0.14)',
+        borderWidth: 2.2,
+        pointRadius: 3,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.pos,
+        pointBorderWidth: 1.8,
+        tension: 0.25,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { ticks: { callback: v => '$' + v.toFixed(1) + ' bn' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Stock: $' + ctx.parsed.y.toFixed(2) + ' billones de pesos' },
+        },
+      },
+    }),
+  });
+}
+
+function renderHipoCant() {
+  new Chart(document.getElementById('chart-hipo-cant'), {
+    type: 'bar',
+    data: {
+      labels: HIPO_CANT.anios,
+      datasets: [{
+        data: HIPO_CANT.cantidad,
+        backgroundColor: HIPO_CANT.cantidad.map((_, i) => i >= 5 ? PAL.pos : PAL.muted),
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v.toLocaleString('es-AR') }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.parsed.y.toLocaleString('es-AR') + ' créditos otorgados' },
+        },
+      },
+    }),
+  });
+}
+
+function renderAUH() {
+  new Chart(document.getElementById('chart-auh'), {
+    type: 'line',
+    data: {
+      labels: AUH_REAL.labels,
+      datasets: [{
+        label: 'AUH real',
+        data: AUH_REAL.indice,
+        borderColor: PAL.accent,
+        backgroundColor: 'rgba(184,115,39,0.12)',
+        borderWidth: 2.2,
+        pointRadius: 3.5,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.accent,
+        pointBorderWidth: 1.8,
+        tension: 0.15,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          ticks: { callback: v => v },
+          grid: { color: PAL.rule },
+          title: { display: true, text: 'Índice, dic-2019 = 100', color: PAL.muted, font: { size: 10 } },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => 'AUH real: ' + ctx.parsed.y + ' (' + (ctx.parsed.y > 100 ? '+' : '') + (ctx.parsed.y - 100) + ' pp vs dic-2019)',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderFiscal() {
+  new Chart(document.getElementById('chart-fiscal'), {
+    type: 'bar',
+    data: {
+      labels: FISCAL.anios,
+      datasets: [
+        { label: 'Resultado primario',   data: FISCAL.primario,   backgroundColor: FISCAL.primario.map(v => v >= 0 ? PAL.pos : PAL.accent), borderWidth: 0 },
+        { label: 'Resultado financiero', data: FISCAL.financiero, backgroundColor: FISCAL.financiero.map(v => v >= 0 ? '#1f5840' : PAL.neg), borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v.toFixed(1) + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1) + '% del PBI' },
+        },
+      },
+    }),
+  });
+}
+
+function renderGasto() {
+  new Chart(document.getElementById('chart-gasto'), {
+    type: 'bar',
+    data: {
+      labels: GASTO_NIVEL.anios,
+      datasets: [
+        { label: 'Nacional',           data: GASTO_NIVEL.nacional,   backgroundColor: PAL.blue,   borderWidth: 0 },
+        { label: 'Provincial + CABA',  data: GASTO_NIVEL.provincial, backgroundColor: PAL.accent, borderWidth: 0 },
+        { label: 'Municipal',          data: GASTO_NIVEL.municipal,  backgroundColor: PAL.pos,    borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '% del PBI',
+            footer: items => 'Total: ' + items.reduce((s, i) => s + i.parsed.y, 0).toFixed(1) + '% del PBI',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderEMAE() {
+  new Chart(document.getElementById('chart-emae'), {
+    type: 'line',
+    data: {
+      labels: EMAE.labels,
+      datasets: [{
+        label: 'EMAE',
+        data: EMAE.indice,
+        borderColor: PAL.blue,
+        backgroundColor: 'rgba(31,58,95,0.10)',
+        borderWidth: 2,
+        pointRadius: 2.5,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.blue,
+        pointBorderWidth: 1.5,
+        tension: 0.2,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9.5 }, maxTicksLimit: 14 } },
+        y: {
+          ticks: { callback: v => v },
+          grid: { color: PAL.rule },
+          title: { display: true, text: 'Índice desest., 2004 = 100', color: PAL.muted, font: { size: 10 } },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            title: items => items[0].label,
+            label: ctx => 'EMAE: ' + ctx.parsed.y + ' (desest., base 2004=100)',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderPbiPc() {
+  new Chart(document.getElementById('chart-pbi-pc'), {
+    type: 'line',
+    data: {
+      labels: PBI_PC.anios,
+      datasets: [{
+        data: PBI_PC.usd_ppp,
+        borderColor: PAL.blue,
+        backgroundColor: 'rgba(31,58,95,0.10)',
+        borderWidth: 2.2,
+        pointRadius: 4,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.blue,
+        pointBorderWidth: 2,
+        tension: 0.2,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => 'US$ ' + (v/1000).toFixed(0) + 'k' },
+          grid: { color: PAL.rule },
+          title: { display: true, text: 'USD PPA constantes 2021', color: PAL.muted, font: { size: 10 } },
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => 'PBI per cápita: US$ ' + ctx.parsed.y.toLocaleString('es-AR') + ' (PPA)',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderDeudaNeta() {
+  new Chart(document.getElementById('chart-deuda-neta'), {
+    type: 'bar',
+    data: {
+      labels: DEUDA_NETA.anios,
+      datasets: [{
+        data: DEUDA_NETA.pct_pbi,
+        backgroundColor: PAL.blue,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Deuda neta consolidada: ' + ctx.parsed.y + '% del PBI' },
+        },
+      },
+    }),
+  });
+}
+
+function renderPBI() {
+  new Chart(document.getElementById('chart-pbi'), {
+    type: 'bar',
+    data: {
+      labels: PBI.anios,
+      datasets: [{
+        data: PBI.variacion,
+        backgroundColor: PBI.variacion.map(v => v >= 0 ? PAL.pos : PAL.neg),
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => (v >= 0 ? '+' : '') + v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'PBI: ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1).replace('.',',') + '% i.a.' },
+        },
+      },
+    }),
+  });
+}
+
+function renderDesempleo() {
+  new Chart(document.getElementById('chart-desempleo'), {
+    type: 'line',
+    data: {
+      labels: DESEMPLEO.labels,
+      datasets: [{
+        data: DESEMPLEO.tasa,
+        borderColor: PAL.neg,
+        backgroundColor: 'rgba(155,44,44,0.10)',
+        borderWidth: 2,
+        pointRadius: 2.5,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.neg,
+        pointBorderWidth: 1.5,
+        tension: 0.2,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9.5 }, maxTicksLimit: 14 } },
+        y: { ticks: { callback: v => v.toFixed(1) + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Desempleo: ' + ctx.parsed.y.toFixed(1).replace('.',',') + '%' },
+        },
+      },
+    }),
+  });
+}
+
+function renderReservas() {
+  new Chart(document.getElementById('chart-reservas'), {
+    type: 'bar',
+    data: {
+      labels: RESERVAS.anios,
+      datasets: [{
+        data: RESERVAS.stock,
+        backgroundColor: PAL.ink,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => 'US$ ' + (v/1000).toFixed(0) + 'k M' },
+          grid: { color: PAL.rule },
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Reservas: US$ ' + ctx.parsed.y.toLocaleString('es-AR') + ' millones' },
+        },
+      },
+    }),
+  });
+}
+
+function renderTPM() {
+  new Chart(document.getElementById('chart-tpm'), {
+    type: 'line',
+    data: {
+      labels: TPM.anios,
+      datasets: [{
+        data: TPM.tasa,
+        borderColor: PAL.blue,
+        backgroundColor: 'rgba(31,58,95,0.12)',
+        borderWidth: 2.2,
+        pointRadius: 4,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.blue,
+        pointBorderWidth: 2,
+        tension: 0.15,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Tasa de referencia: ' + ctx.parsed.y + '% TNA' },
+        },
+      },
+    }),
+  });
+}
+
+function renderSalario() {
+  new Chart(document.getElementById('chart-salario'), {
+    type: 'line',
+    data: {
+      labels: SALARIO_REAL.labels,
+      datasets: [{
+        label: 'Salario real',
+        data: SALARIO_REAL.indice,
+        borderColor: PAL.neg,
+        backgroundColor: 'rgba(155,44,44,0.10)',
+        borderWidth: 2.2,
+        pointRadius: 3,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.neg,
+        pointBorderWidth: 1.6,
+        tension: 0.2,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          ticks: { callback: v => v },
+          grid: { color: PAL.rule },
+          title: { display: true, text: 'Índice, dic-2019 = 100', color: PAL.muted, font: { size: 10 } },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => 'Salario real (RIPTE): ' + ctx.parsed.y + ' (' + (ctx.parsed.y > 100 ? '+' : '') + (ctx.parsed.y - 100) + ' pp vs dic-2019)',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderITCRM() {
+  new Chart(document.getElementById('chart-itcrm'), {
+    type: 'line',
+    data: {
+      labels: ITCRM.labels,
+      datasets: [{
+        data: ITCRM.indice,
+        borderColor: PAL.blue,
+        backgroundColor: 'rgba(31,58,95,0.10)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.blue,
+        pointBorderWidth: 1.6,
+        tension: 0.15,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { ticks: { callback: v => v }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'ITCRM: ' + ctx.parsed.y + ' (base dic-2015 = 100)' },
+        },
+      },
+    }),
+  });
+}
+
+function renderDeuda() {
+  new Chart(document.getElementById('chart-deuda'), {
+    type: 'bar',
+    data: {
+      labels: DEUDA.anios,
+      datasets: [{
+        data: DEUDA.pct_pbi,
+        backgroundColor: PAL.ink,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Deuda bruta: ' + ctx.parsed.y + '% del PBI' },
+        },
+      },
+    }),
+  });
+}
+
+function renderRecaudacion() {
+  new Chart(document.getElementById('chart-recaudacion'), {
+    type: 'bar',
+    data: {
+      labels: RECAUDACION.anios,
+      datasets: [{
+        data: RECAUDACION.variacion,
+        backgroundColor: RECAUDACION.variacion.map(v => v >= 0 ? PAL.pos : PAL.neg),
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => (v >= 0 ? '+' : '') + v + '%' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => 'Recaudación real: ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toFixed(1).replace('.', ',') + '% i.a.' },
+        },
+      },
+    }),
+  });
+}
+
+function renderIpiIsac() {
+  new Chart(document.getElementById('chart-ipi-isac'), {
+    type: 'line',
+    data: {
+      labels: IPI_ISAC.anios,
+      datasets: [
+        { label: 'Industria (IPI)',    data: IPI_ISAC.ipi,  borderColor: PAL.blue,   backgroundColor: PAL.blue,   borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+        { label: 'Construcción (ISAC)', data: IPI_ISAC.isac, borderColor: PAL.accent, backgroundColor: PAL.accent, borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v }, grid: { color: PAL.rule }, title: { display: true, text: 'Base 2004 = 100', color: PAL.muted, font: { size: 10 } } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' (base 2004=100)' },
+        },
+      },
+    }),
+  });
+}
+
+function renderAutos() {
+  new Chart(document.getElementById('chart-autos'), {
+    type: 'bar',
+    data: {
+      labels: AUTOS.anios,
+      datasets: [{
+        data: AUTOS.unidades,
+        backgroundColor: AUTOS.unidades.map((_, i) => {
+          if (i === AUTOS.unidades.length - 1) return PAL.muted; // 2026 parcial
+          if (i === AUTOS.unidades.length - 2) return PAL.pos;   // 2025 último año completo
+          return PAL.ink;
+        }),
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => (v / 1000).toFixed(0) + 'k' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.parsed.y.toLocaleString('es-AR') + ' unidades' },
+        },
+      },
+    }),
+  });
+}
+
+function renderLitio() {
+  new Chart(document.getElementById('chart-litio'), {
+    type: 'bar',
+    data: {
+      labels: LITIO.anios,
+      datasets: [
+        { label: 'Producción (LCE)', data: LITIO.produccion, backgroundColor: PAL.ink,    borderWidth: 0 },
+        { label: 'Exportación',      data: LITIO.exportacion, backgroundColor: PAL.accent, borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v + 'k tn' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString('es-AR') + ' mil toneladas LCE' },
+        },
+      },
+    }),
+  });
+}
+
+function renderConsumo() {
+  new Chart(document.getElementById('chart-consumo'), {
+    type: 'line',
+    data: {
+      labels: CONSUMO.anios,
+      datasets: [
+        { label: 'Supermercados',  data: CONSUMO.super,     borderColor: PAL.blue,   backgroundColor: PAL.blue,   borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+        { label: 'Shoppings',      data: CONSUMO.shoppings, borderColor: PAL.neg,    backgroundColor: PAL.neg,    borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+        { label: 'E-commerce',     data: CONSUMO.ecommerce, borderColor: PAL.accent, backgroundColor: PAL.accent, borderWidth: 2.2, pointRadius: 3, tension: 0.2 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v }, grid: { color: PAL.rule }, title: { display: true, text: 'Índice real, 2019 = 100', color: PAL.muted, font: { size: 10 } } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' (real, 2019=100)' },
+        },
+      },
+    }),
+  });
+}
+
+function renderHomicidios() {
+  new Chart(document.getElementById('chart-homicidios'), {
+    type: 'line',
+    data: {
+      labels: HOMICIDIOS.anios,
+      datasets: [{
+        data: HOMICIDIOS.tasa,
+        borderColor: PAL.neg,
+        backgroundColor: 'rgba(155,44,44,0.12)',
+        borderWidth: 2.2,
+        pointRadius: 4,
+        pointBackgroundColor: PAL.paper,
+        pointBorderColor: PAL.neg,
+        pointBorderWidth: 2,
+        tension: 0.2,
+        fill: true,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => v.toFixed(1).replace('.',',') },
+          grid: { color: PAL.rule },
+          title: { display: true, text: 'Cada 100.000 habitantes', color: PAL.muted, font: { size: 10 } },
+          beginAtZero: false,
+        },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => 'Tasa: ' + ctx.parsed.y.toFixed(1).replace('.',',') + ' cada 100k hab.',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderFemicidios() {
+  new Chart(document.getElementById('chart-femicidios'), {
+    type: 'bar',
+    data: {
+      labels: FEMICIDIOS.anios,
+      datasets: [{
+        data: FEMICIDIOS.victimas,
+        backgroundColor: PAL.accent,
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v }, grid: { color: PAL.rule }, beginAtZero: true },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => ctx.parsed.y + ' víctimas directas',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderRosario() {
+  new Chart(document.getElementById('chart-rosario'), {
+    type: 'bar',
+    data: {
+      labels: ROSARIO.anios,
+      datasets: [{
+        data: ROSARIO.homicidios,
+        backgroundColor: ROSARIO.homicidios.map((v, i) => i >= 5 ? PAL.pos : PAL.ink),
+        borderWidth: 0,
+      }],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { callback: v => v }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => ctx.parsed.y + ' homicidios en Rosario',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderPreciosCat() {
+  new Chart(document.getElementById('chart-precios-cat'), {
+    type: 'line',
+    data: {
+      labels: PRECIOS_CAT.anios,
+      datasets: [
+        { label: 'Alquileres (CABA)',         data: PRECIOS_CAT.alquileres,        borderColor: PAL.neg,    backgroundColor: PAL.neg,    borderWidth: 2.4, pointRadius: 4, tension: 0.2 },
+        { label: 'Ropa y calzado',            data: PRECIOS_CAT.prendas,           borderColor: PAL.accent, backgroundColor: PAL.accent, borderWidth: 2.4, pointRadius: 4, tension: 0.2 },
+        { label: 'Equipamiento del hogar',    data: PRECIOS_CAT.electrodomesticos, borderColor: PAL.blue,   backgroundColor: PAL.blue,   borderWidth: 2.4, pointRadius: 4, tension: 0.2 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          ticks: { callback: v => v },
+          grid: { color: PAL.rule },
+          title: { display: true, text: 'Índice real, 2019 = 100', color: PAL.muted, font: { size: 10 } },
+        },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' (' + (ctx.parsed.y >= 100 ? '+' : '') + (ctx.parsed.y - 100) + ' pp vs 2019)',
+          },
+        },
+      },
+    }),
+  });
+}
+
+function renderDestinos() {
+  new Chart(document.getElementById('chart-destinos'), {
+    type: 'bar',
+    data: {
+      labels: DESTINOS.anios,
+      datasets: [
+        { label: 'Brasil',  data: DESTINOS.brasil, backgroundColor: PAL.pos,    borderWidth: 0 },
+        { label: 'China',   data: DESTINOS.china,  backgroundColor: PAL.neg,    borderWidth: 0 },
+        { label: 'UE',      data: DESTINOS.ue,     backgroundColor: PAL.blue,   borderWidth: 0 },
+        { label: 'EE.UU.',  data: DESTINOS.eeuu,   backgroundColor: PAL.accent, borderWidth: 0 },
+        { label: 'Chile',   data: DESTINOS.chile,  backgroundColor: PAL.blueSoft, borderWidth: 0 },
+        { label: 'Otros',   data: DESTINOS.otros,  backgroundColor: PAL.muted,  borderWidth: 0 },
+      ],
+    },
+    options: baseOpts({
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => 'US$ ' + (v/1000).toFixed(0) + 'k' }, grid: { color: PAL.rule } },
+      },
+      plugins: {
+        legend: { display: true, position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 14, padding: 14, color: PAL.inkSoft, font: { size: 11 } } },
+        tooltip: {
+          backgroundColor: PAL.ink,
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': US$ ' + ctx.parsed.y.toLocaleString('es-AR') + ' M',
+            footer: items => 'Total: US$ ' + items.reduce((s, i) => s + i.parsed.y, 0).toLocaleString('es-AR') + ' M',
+          },
+        },
+      },
+    }),
+  });
+}
+
+/* ====================================================
+   INIT
+==================================================== */
+function setUpdated() {
+  const now = new Date();
+  const s = now.toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' });
+  document.getElementById('updated-at').textContent = s;
+  document.getElementById('last-load').textContent = s;
+}
+
+async function init() {
+  setUpdated();
+
+  // Embedded (instantáneos)
+  renderBalanza();
+  renderEnergetica();
+  renderRubros();
+  renderPreciosCant();
+  renderPetroleo();
+  renderGas();
+  renderVaca();
+  renderMineria();
+  renderGranos();
+  renderCarne();
+  renderLacteos();
+  renderSoja();
+  renderPobreza();
+  renderHipoStock();
+  renderHipoCant();
+  renderAUH();
+  renderFiscal();
+  renderGasto();
+  renderEMAE();
+  renderPBI();
+  renderPbiPc();
+  renderDesempleo();
+  renderReservas();
+  renderTPM();
+  renderSalario();
+  renderITCRM();
+  renderDeuda();
+  renderDeudaNeta();
+  renderRecaudacion();
+  renderIpiIsac();
+  renderAutos();
+  renderLitio();
+  renderConsumo();
+  renderDestinos();
+  renderHomicidios();
+  renderFemicidios();
+  renderRosario();
+  renderPreciosCat();
+
+  // Live (paralelos)
+  const results = await Promise.allSettled([
+    renderInflacion(),
+    renderInflacionIA(),
+    renderUVA(),
+    renderDolares(),
+    renderRiesgo(),
+    liveBCRA(),
+  ]);
+  // Quitamos liveBCRA del check de "all failed" porque su caída no implica falla de red general
+  const liveResults = results.slice(0, 5);
+  const allFailed = liveResults.every(r => r.status === 'rejected');
+  if (allFailed) {
+    document.getElementById('net-warn').style.display = 'block';
+    document.getElementById('status-dot').style.background = PAL.neg;
+    document.getElementById('status-dot').style.boxShadow = '0 0 0 3px rgba(155,44,44,0.18)';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
